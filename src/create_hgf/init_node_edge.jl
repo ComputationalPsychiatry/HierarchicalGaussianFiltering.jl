@@ -105,4 +105,9 @@ function init_edge!(
         #Set the node to use the enhanced HGF update
         parent_node.update_type = node_defaults.update_type
     end
+    #If the enhanced HGF update is the defaults, and if it is a precision coupling (volatility or noise)
+    if node_defaults.update_type isa UniversalUpdate && coupling_type isa PrecisionCoupling
+        #Set the node to use the enhanced HGF update
+        parent_node.update_type = node_defaults.update_type
+    end
 end

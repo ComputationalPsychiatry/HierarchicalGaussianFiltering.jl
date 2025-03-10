@@ -147,6 +147,21 @@ function update_node_posterior!(node::ContinuousStateNode, update_type::Enhanced
     return nothing
 end
 
+"""
+    update_node_posterior!(node::AbstractStateNode; update_type::HGFUpdateType)
+
+Update the posterior of a single continuous state node. This is the classic HGF update.
+"""
+function update_node_posterior!(node::ContinuousStateNode, update_type::UniversalUpdate)
+    #Update posterior precision
+    node.states.posterior_precision = calculate_posterior_precision(node, update_type)
+
+    #Update posterior mean
+    node.states.posterior_mean = calculate_posterior_mean(node, update_type)
+
+    return nothing
+end
+
 ##### Precision update #####
 @doc raw"""
     calculate_posterior_precision(node::AbstractNode)
@@ -199,6 +214,61 @@ function calculate_posterior_precision(
     end
 
 
+    #If the posterior precision is negative
+    if posterior_precision < 0
+        #Throw an error
+        throw(
+            #Of the custom type where samples are rejected
+            RejectParameters(
+                "With these parameters and inputs, the posterior precision of node $(node.name) becomes negative after $(length(node.history.posterior_precision)) inputs",
+            ),
+        )
+    end
+
+    return posterior_precision
+end
+
+function calculate_posterior_precision(
+    node::ContinuousStateNode,
+    update_type::UniversalUpdate,
+)
+
+    #Initialize as the node's own prediction
+    posterior_precision = node.states.prediction_precision
+
+    #Get the update from the volatilty and noise children (universal!)
+    posterior_precision = update_precision_VOPE(node, 
+                            node.edges.volatility_children, 
+                            update_type)
+
+    #Add update terms from drift children
+    for child in node.edges.drift_children
+        posterior_precision += calculate_posterior_precision_increment(
+            node,
+            child,
+            DriftCoupling(),
+            update_type,
+        )
+    end
+
+    #Add update terms from observation children
+    for child in node.edges.observation_children
+        posterior_precision +=
+            calculate_posterior_precision_increment(node, child, ObservationCoupling())
+    end
+
+    #Add update terms from probability children
+    for child in node.edges.probability_children
+        posterior_precision +=
+            calculate_posterior_precision_increment(node, child, ProbabilityCoupling())
+    end
+
+    #Add update terms from noise children
+    for child in node.edges.noise_children
+        posterior_precision +=
+            calculate_posterior_precision_increment(node, child, NoiseCoupling())
+    end
+ 
     #If the posterior precision is negative
     if posterior_precision < 0
         #Throw an error

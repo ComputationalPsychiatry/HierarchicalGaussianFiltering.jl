@@ -32,6 +32,7 @@ abstract type HGFUpdateType end
 #Classic and enhance dupdate types
 struct ClassicUpdate <: HGFUpdateType end
 struct EnhancedUpdate <: HGFUpdateType end
+struct UniversalUpdate <: HGFUpdateType end
 
 ################################
 ######## Coupling types ########
