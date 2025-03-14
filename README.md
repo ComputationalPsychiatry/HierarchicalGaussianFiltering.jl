@@ -1,5 +1,5 @@
 # HGF
-[![Dev](https://img.shields.io/badge/docs-stable-blue.svg)](https://computationalpsychiatry.github.io/HierarchicalGaussianFiltering.jl)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://computationalpsychiatry.github.io/HierarchicalGaussianFiltering.jl)
 [![Build Status](https://github.com/computationalpsychiatry/HierarchicalGaussianFiltering.jl/actions/workflows/CI_full.yml/badge.svg?branch=main)](https://github.com/computationalpsychiatry/HierarchicalGaussianFiltering.jl/actions/workflows/CI_full.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/computationalpsychiatry/HierarchicalGaussianFiltering.jl/branch/main/graph/badge.svg?token=NVFiiPydFA)](https://codecov.io/gh/computationalpsychiatry/HierarchicalGaussianFiltering.jl)
 [![License: GNU](https://img.shields.io/badge/License-GNU-yellow)](<https://www.gnu.org/licenses/>)
