@@ -30,12 +30,12 @@ hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
     @testset "Documentation tests" begin
 
         #Set up path for the documentation folder
-        documentation_path = hgf_path * "/docs/src/"
+        documentation_path = joinpath(hgf_path, "docs", "src")
 
         @testset "Sourcefiles" begin
 
             # List the julia filenames in the documentation source files folder
-            filenames = glob("*.jl", documentation_path * "/Julia_src_files")
+            filenames = [glob("*/*.jl", joinpath(documentation_path, "julia_files"));glob("*.jl", joinpath(documentation_path, "julia_files"))] 
 
             for filename in filenames
                 @testset "$filename" begin
@@ -44,16 +44,16 @@ hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
             end
         end
 
-        @testset "Tutorials" begin
+        # @testset "Tutorials" begin
 
-            # List the julia filenames in the tutorials folder
-            filenames = glob("*.jl", documentation_path * "/tutorials")
+        #     # List the julia filenames in the tutorials folder
+        #     filenames = glob("*.jl", joinpath(documentation_path, "tutorials"))
 
-            for filename in filenames
-                @testset "$filename" begin
-                    include(filename)
-                end
-            end
-        end
+        #     for filename in filenames
+        #         @testset "$filename" begin
+        #             include(filename)
+        #         end
+        #     end
+        # end
     end
 end
