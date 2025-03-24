@@ -38,13 +38,10 @@ end
 
 
 ##### Precision update #####
-@doc raw"""
+"""
     calculate_prediction_precision(node::AbstractInputNode)
 
 Calculates an input node's prediction precision.
-
-Uses the equation
-`` \hat{\pi}_n = \frac{1}{\nu}_n  ``
 """
 function calculate_prediction_precision(node::ContinuousInputNode)
 
@@ -89,13 +86,10 @@ end
 
 
 
-@doc raw"""
+"""
     calculate_value_prediction_error(node::ContinuousInputNode)
 
 Calculate's an input node's value prediction error.
-
-Uses the equation
-``\delta_n= u - \sum_{j=1}^{j\;value\;parents} \hat{\mu}_{j} ``
 """
 function calculate_value_prediction_error(node::ContinuousInputNode)
     #For missing input
@@ -129,15 +123,10 @@ function update_node_precision_prediction_error!(node::ContinuousInputNode)
     return nothing
 end
 
-@doc raw"""
+"""
     calculate_precision_prediction_error(node::ContinuousInputNode)
 
 Calculates an input node's volatility prediction error.
-
-Uses the equation
-``  \mu'_j=\sum_{j=1}^{j\;value\;parents} \mu_{j} ``
-`` \pi'_j=\frac{{\sum_{j=1}^{j\;value\;parents} \pi_{j}}}{j} ``
-`` \Delta_n=\frac{\hat{\pi}_n}{\pi'_j} + \hat{\mu}_i\cdot (u -\mu'_j^2 )-1 ``
 """
 function calculate_precision_prediction_error(node::ContinuousInputNode)
 
