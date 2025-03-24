@@ -17,6 +17,9 @@
 
 # We can recall from the HGF nodes, that a binary input node's parameters are category means and input precision. We will set category means to [0,1] and the input precision to Inf. 
 
+using HierarchicalGaussianFiltering
+using ActionModels
+
 nodes = [
     BinaryInput("Input_node"),
     BinaryState("binary_state_node"),
@@ -45,10 +48,7 @@ edges = Dict(
     ("binary_state_node", "continuous_state_node") => ProbabilityCoupling(1),
 );
 
-# We are ready to initialize our HGF now. 
-
-using HierarchicalGaussianFiltering
-using ActionModels
+# We are ready to initialize our HGF now.
 
 Binary_2_level_hgf = init_hgf(nodes = nodes, edges = edges, verbose = false);
 # We can access the states in our HGF:

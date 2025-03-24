@@ -21,8 +21,8 @@ using StatsPlots #hide
 
 #CSV.read(pwd(), DataFrame)
 
-hgf_path_continuous = dirname(pathof(HierarchicalGaussianFiltering)); #hide
-hgf_path_continuous = hgf_path_continuous * "/docs/src/tutorials/data/"; #hide
+hgf_path_continuous = dirname(dirname(pathof(HierarchicalGaussianFiltering))); #hide
+hgf_path_continuous = hgf_path_continuous * "/docs/julia_files/tutorials/data/"; #hide
 
 inputs_continuous = Float64[]; #hide
 open(hgf_path_continuous * "classic_usdchf_inputs.dat") do f #hide
@@ -33,7 +33,7 @@ end #hide
 
 hgf_path_binary = dirname(dirname(pathof(HierarchicalGaussianFiltering))); #hide
 
-hgf_path_binary = hgf_path_binary * "/docs/src/tutorials/data/"; #hide
+hgf_path_binary = hgf_path_binary * "/docs/julia_files/tutorials/data/"; #hide
 
 inputs_binary = CSV.read(hgf_path_binary * "classic_binary_inputs.csv", DataFrame)[!, 1]; #hide
 
