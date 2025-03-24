@@ -30,15 +30,15 @@ hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
     @testset "Documentation tests" begin
 
         #Set up path for the documentation folder
-        documentation_path = joinpath(hgf_path, "docs", "src")
+        documentation_path = joinpath(hgf_path, "docs", "julia_files")
 
         @testset "Sourcefiles" begin
 
             # List the julia filenames in the documentation source files folder
-            filenames = [glob("*/*.jl", joinpath(documentation_path, "julia_files"));glob("*.jl", joinpath(documentation_path, "julia_files"))] 
+            filenames = [glob("*/*.jl", documentation_path); glob("*.jl", documentation_path)] 
 
             for filename in filenames
-                @testset "$filename" begin
+                @testset "$(splitpath(filename)[end])" begin
                     include(filename)
                 end
             end

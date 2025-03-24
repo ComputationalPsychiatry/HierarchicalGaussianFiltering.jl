@@ -7,7 +7,7 @@ using Distributions
 # Get the path for the HGF superfolder
 hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
 # Add the path to the data files
-data_path = hgf_path * "/docs/src/tutorials/data/"
+data_path = hgf_path * "/docs/julia_files/tutorials/data/"
 
 #Load data
 data = CSV.read(data_path * "classic_cannonball_data.csv", DataFrame)

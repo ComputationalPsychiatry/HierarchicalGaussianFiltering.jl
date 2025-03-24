@@ -20,13 +20,10 @@ function update_node_prediction!(node::BinaryStateNode, stepsize::Real)
 end
 
 ##### Mean update #####
-@doc raw"""
+"""
     calculate_prediction_mean(node::BinaryStateNode)
 
 Calculates a binary state node's prediction mean.
-
-Uses the equation
-`` \hat{\mu}_n= \big(1+e^{\sum_{j=1}^{j\;value \; parents} \hat{\mu}_{j}}\big)^{-1}  ``
 """
 function calculate_prediction_mean(node::BinaryStateNode)
     probability_parents = node.edges.probability_parents
@@ -44,13 +41,10 @@ function calculate_prediction_mean(node::BinaryStateNode)
 end
 
 ##### Precision update #####
-@doc raw"""
+"""
     calculate_prediction_precision(node::BinaryStateNode)
 
 Calculates a binary state node's prediction precision.
-
-Uses the equation
-`` \hat{\pi}_n = \frac{1}{\hat{\mu}_n \cdot (1-\hat{\mu}_n)} ``
 """
 function calculate_prediction_precision(node::BinaryStateNode)
     1 / (node.states.prediction_mean * (1 - node.states.prediction_mean))
@@ -77,18 +71,10 @@ function update_node_posterior!(node::BinaryStateNode, update_type::HGFUpdateTyp
 end
 
 ##### Precision update #####
-@doc raw"""
+"""
     calculate_posterior_precision(node::BinaryStateNode)
 
 Calculates a binary node's posterior precision.
-
-Uses the equations
-
-`` \pi_n = inf ``
-if the precision is infinite 
-
- `` \pi_n = \frac{1}{\hat{\mu}_n \cdot (1-\hat{\mu}_n)} ``
- if the precision is other than infinite
 """
 function calculate_posterior_precision(node::BinaryStateNode)
 
@@ -115,13 +101,10 @@ function calculate_posterior_precision(node::BinaryStateNode)
 end
 
 ##### Mean update #####
-@doc raw"""
+"""
     calculate_posterior_mean(node::BinaryStateNode)
 
 Calculates a node's posterior mean.
-
-Uses the equation
-`` \mu = \frac{e^{-0.5 \cdot \pi_n \cdot \eta_1^2}}{\hat{\mu}_n \cdot e^{-0.5 \cdot \pi_n \cdot \eta_1^2} \; + 1-\hat{\mu}_n \cdot e^{-0.5 \cdot \pi_n \cdot \eta_2^2}}  ``
 """
 function calculate_posterior_mean(node::BinaryStateNode, update_type::HGFUpdateType)
 
@@ -176,13 +159,10 @@ function update_node_value_prediction_error!(node::BinaryStateNode)
     return nothing
 end
 
-@doc raw"""
+"""
     calculate_value_prediction_error(node::AbstractNode)
 
 Calculate's a state node's value prediction error.
-
-Uses the equation
-`` \delta_n = \mu_n - \hat{\mu}_n  ``
 """
 function calculate_value_prediction_error(node::BinaryStateNode)
     node.states.posterior_mean - node.states.prediction_mean

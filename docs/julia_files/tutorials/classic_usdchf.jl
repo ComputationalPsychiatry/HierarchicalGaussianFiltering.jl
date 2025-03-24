@@ -94,14 +94,14 @@ param_priors = Dict(
     "action_noise" => LogNormal(log(0.01), 1),
 );
 #-
-# Prior predictive simulation plot
-plot_predictive_simulation(
-    param_priors,
-    agent,
-    inputs,
-    ("x", "posterior_mean");
-    n_simulations = 100,
-)
+# # Prior predictive simulation plot
+# plot_predictive_simulation(
+#     param_priors,
+#     agent,
+#     inputs,
+#     ("x", "posterior_mean");
+#     n_simulations = 100,
+# )
 #-
 # Do parameter recovery
 model = create_model(agent, param_priors, inputs, actions)
@@ -110,7 +110,7 @@ model = create_model(agent, param_priors, inputs, actions)
 fitted_model = fit_model(model; n_iterations = 10, n_chains = 1)
 #-
 # Plot the chains
-plot(fitted_model)
+plot(fitted_model.chains)
 #-
 # Plot prior posterior distributions
 # plot_parameter_distribution(fitted_model, param_priors)

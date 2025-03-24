@@ -49,15 +49,10 @@ end
 
 
 ### Single node functions ###
-@doc raw"""
+"""
     get_surprise(node::ContinuousInputNode)
 
 Calculate the surprise of an input node on seeing the last input.
-
-Equation:
-``\hat{\mu}'_j={\sum_{j=1}^{j\;value\;parents} \hat{\mu}_j}``
-
-`` \Im= -log(pdf(\mathcal{N}(\hat{\mu}'_j, \hat{\pi}_j), u))``
 """
 function get_surprise(node::ContinuousInputNode)
 

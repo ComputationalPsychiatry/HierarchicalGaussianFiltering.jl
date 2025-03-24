@@ -21,13 +21,10 @@ function update_node_prediction!(node::ContinuousStateNode, stepsize::Real)
 end
 
 ##### Mean update #####
-@doc raw"""
+"""
     calculate_prediction_mean(node::AbstractNode)
 
 Calculates a node's prediction mean.
-
-Uses the equation
-`` \hat{\mu}_i=\mu_i+\sum_{j=1}^{j\;value\;parents} \mu_{j} \cdot \alpha_{i,j} ``
 """
 function calculate_prediction_mean(node::ContinuousStateNode, stepsize::Real)
     #Get out drift parents
@@ -67,13 +64,11 @@ function calculate_prediction_mean(node::ContinuousStateNode, stepsize::Real)
 end
 
 ##### Precision update #####
-@doc raw"""
+"""
     calculate_prediction_precision(node::AbstractNode)
 
 Calculates a node's prediction precision.
 
-Uses the equation
-`` \hat{\pi}_i^ =  ``
 """
 function calculate_prediction_precision(node::ContinuousStateNode, stepsize::Real)
     #Extract volatility parents
@@ -148,13 +143,10 @@ function update_node_posterior!(node::ContinuousStateNode, update_type::Enhanced
 end
 
 ##### Precision update #####
-@doc raw"""
+"""
     calculate_posterior_precision(node::AbstractNode)
 
 Calculates a node's posterior precision.
-
-Uses the equation
-`` \pi_i^{'} = \hat{\pi}_i +\underbrace{\sum_{j=1}^{j\;children} \alpha_{j,i} \cdot \hat{\pi}_{j}} _\text{sum \;of \;VAPE \; continuous \; value \;chidren} ``
 """
 function calculate_posterior_precision(
     node::ContinuousStateNode,
@@ -279,13 +271,10 @@ function calculate_posterior_precision_increment(
     end
 end
 
-@doc raw"""
+"""
     calculate_posterior_precision_vope(node::AbstractNode, child::AbstractNode)
 
 Calculates the posterior precision update term for a single continuous volatility child to a state node.
-
-Uses the equation
-``   ``
 """
 function calculate_posterior_precision_increment(
     node::ContinuousStateNode,
@@ -333,13 +322,10 @@ function calculate_posterior_precision_increment(
 end
 
 ##### Mean update #####
-@doc raw"""
+"""
     calculate_posterior_mean(node::AbstractNode)
 
 Calculates a node's posterior mean.
-
-Uses the equation
-``   ``
 """
 function calculate_posterior_mean(node::ContinuousStateNode, update_type::HGFUpdateType)
 
@@ -587,13 +573,10 @@ function update_node_value_prediction_error!(node::ContinuousStateNode)
     return nothing
 end
 
-@doc raw"""
+"""
     calculate_value_prediction_error(node::AbstractNode)
 
 Calculate's a state node's value prediction error.
-
-Uses the equation
-`` \delta_n = \mu_n - \hat{\mu}_n  ``
 """
 function calculate_value_prediction_error(node::ContinuousStateNode)
     node.states.posterior_mean - node.states.prediction_mean
@@ -617,13 +600,10 @@ function update_node_precision_prediction_error!(node::ContinuousStateNode)
     return nothing
 end
 
-@doc raw"""
+"""
     calculate_precision_prediction_error(node::AbstractNode)
 
 Calculates a state node's volatility prediction error.
-
-Uses the equation
-`` \Delta_n = \frac{\hat{\pi}_n}{\pi_n} + \hat{\pi}_n \cdot \delta_n^2-1  ``
 """
 function calculate_precision_prediction_error(node::ContinuousStateNode)
 
