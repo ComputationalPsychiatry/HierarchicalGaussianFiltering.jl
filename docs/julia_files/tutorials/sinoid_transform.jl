@@ -4,10 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ e47a29a4-38b0-4f19-972a-7c1c3e83c2f7
-using Pkg;
-Pkg.activate("../../"); #Activate the docs environment
-
 # ╔═╡ 5ae02fee-48f1-11ef-209c-539e778f577d
 using HierarchicalGaussianFiltering, Distributions, StatsPlots
 
@@ -161,26 +157,3 @@ begin
 
     plot(linear_plt, nonlinear_plt)
 end
-
-# ╔═╡ 0a6546fe-9f5e-4d2a-8c02-59d96332b0a9
-###NEXT STEPS: PREDICT FURTHER IN THE FUTURE
-
-# ╔═╡ Cell order:
-# ╠═e47a29a4-38b0-4f19-972a-7c1c3e83c2f7
-# ╠═5ae02fee-48f1-11ef-209c-539e778f577d
-# ╠═ff1abe62-b477-4c34-927d-4cc758981d60
-# ╠═b53c65b6-24fb-4df0-85e8-c94e973f92d1
-# ╠═c1e30a10-e9f9-4348-92b5-85fdc0be00b0
-# ╠═ec6ceba5-d202-4345-bce8-fc0dada2a019
-# ╠═d2e95dab-7312-4835-b780-91571ba83239
-# ╠═e319c480-cb6d-41fd-a4ec-892a12b95a06
-# ╠═cb170251-4dce-4e75-b457-40f2fb959a5b
-# ╠═847373ac-647d-43a3-93a1-92af9772dce0
-# ╠═c7f92940-18c8-4212-8808-8b29d9b870a1
-# ╠═5835d516-f822-4128-900b-16d09b550cb7
-# ╠═f1ad8c91-7642-4478-8091-bbcecc9f2bcf
-# ╠═50330bc3-e74d-4cfc-908a-a56acbcdd2bc
-# ╠═fa51e10d-3ab3-487c-90bc-9362956f563a
-# ╠═c52a0167-e780-47fc-901c-44cf84b973d4
-# ╠═af36ec40-ca4f-4aff-ae35-439adc5cae89
-# ╠═0a6546fe-9f5e-4d2a-8c02-59d96332b0a9

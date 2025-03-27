@@ -31,10 +31,3 @@ update_hgf!(hgf, [1, 0, 1]);
 # As you can see, the states are updated but only with the last trial saved.
 
 get_states(hgf)
-
-# ### Overview of HGF update functions 
-
-# ```@autodocs
-# Modules = [HierarchicalGaussianFiltering]
-# Pages = ["update_hgf/update_equations.jl","update_hgf/update_hgf.jl","update_hgf/update_node.jl"]
-# ```

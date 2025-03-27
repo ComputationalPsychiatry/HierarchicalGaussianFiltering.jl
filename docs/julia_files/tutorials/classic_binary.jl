@@ -64,14 +64,14 @@ fixed_parameters = Dict(
 # Set priors for parameter recovery
 param_priors = Dict(("xprob", "volatility") => Normal(-3.0, 0.5));
 #-
-# Prior predictive plot
-plot_predictive_simulation(
-    param_priors,
-    agent,
-    inputs,
-    ("xbin", "prediction_mean"),
-    n_simulations = 100,
-)
+# # Prior predictive plot
+# plot_predictive_simulation(
+#     param_priors,
+#     agent,
+#     inputs,
+#     ("xbin", "prediction_mean"),
+#     n_simulations = 100,
+# )
 #-
 # Get the actions from the MATLAB tutorial
 actions = CSV.read(data_path * "classic_binary_actions.csv", DataFrame)[!, 1];
@@ -84,7 +84,7 @@ model = create_model(agent, param_priors, inputs, actions)
 fitted_model = fit_model(model; n_iterations = 10, n_chains = 1)
 #-
 #Plot the chains
-plot(fitted_model)
+plot(fitted_model.chains)
 #-
 # Plot the posterior
 # plot_parameter_distribution(fitted_model, param_priors)

@@ -7,15 +7,15 @@ hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
 
 @testset "All tests" begin
 
+    #Get the path to the testing folder
+    test_path = hgf_path * "/test/"
+
+    @testset "quick tests" begin
+        # Test the quick tests that are used as pre-commit tests
+        include(test_path * "quicktests.jl")
+    end
+
     @testset "Unit tests" begin
-
-        #Get the path to the testing folder
-        test_path = hgf_path * "/test/"
-
-        @testset "quick tests" begin
-            # Test the quick tests that are used as pre-commit tests
-            include(test_path * "quicktests.jl")
-        end
 
         # List the julia filenames in the testsuite
         filenames = glob("*.jl", test_path * "testsuite")
@@ -30,29 +30,14 @@ hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
     @testset "Documentation tests" begin
 
         #Set up path for the documentation folder
-        documentation_path = hgf_path * "/docs/src/"
+        documentation_path = joinpath(hgf_path, "docs", "julia_files")
 
-        @testset "Sourcefiles" begin
+        # List the julia filenames in the documentation source files folder
+        filenames = [glob("*/*.jl", documentation_path); glob("*.jl", documentation_path)] 
 
-            # List the julia filenames in the documentation source files folder
-            filenames = glob("*.jl", documentation_path * "/Julia_src_files")
-
-            for filename in filenames
-                @testset "$filename" begin
-                    include(filename)
-                end
-            end
-        end
-
-        @testset "Tutorials" begin
-
-            # List the julia filenames in the tutorials folder
-            filenames = glob("*.jl", documentation_path * "/tutorials")
-
-            for filename in filenames
-                @testset "$filename" begin
-                    include(filename)
-                end
+        for filename in filenames
+            @testset "$(splitpath(filename)[end])" begin
+                include(filename)
             end
         end
     end

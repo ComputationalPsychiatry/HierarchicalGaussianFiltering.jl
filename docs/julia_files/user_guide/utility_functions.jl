@@ -193,10 +193,3 @@ reset!(agent)
 
 # see that action state is cleared
 get_history(agent)
-
-# ### Overview of all ultility functions
-
-# ```@autodocs
-# Modules = [HierarchicalGaussianFiltering]
-# Pages = ["ActionModels_variations/utils/get_history.jl","ActionModels_variations/utils/get_parameters.jl","ActionModels_variations/utils/get_states.jl","ActionModels_variations/utils/give_inputs.jl","ActionModels_variations/utils/reset.jl","ActionModels_variations/utils/set_parameters.jl",utils/get_prediction.jl", "utils/get_surprise.jl"]
-# ```

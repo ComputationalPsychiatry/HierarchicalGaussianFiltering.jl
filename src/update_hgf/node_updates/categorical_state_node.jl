@@ -17,13 +17,11 @@ function update_node_prediction!(node::CategoricalStateNode, stepsize::Real)
 end
 
 
-@doc raw"""
+"""
     function calculate_prediction(node::CategoricalStateNode)
 
 Calculate the prediction for a categorical state node.
 
-Uses the equation
-``  \vec{\hat{\mu}_n}= \frac{\hat{\mu}_j}{\sum_{j=1}^{j\;binary \;parents} \hat{\mu}_j} ``
 """
 function calculate_prediction(node::CategoricalStateNode)
 
@@ -83,13 +81,10 @@ function update_node_posterior!(node::CategoricalStateNode, update_type::Classic
 end
 
 
-@doc raw"""
+"""
     calculate_posterior(node::CategoricalStateNode)
 
 Calculate the posterior for a categorical state node.
-
-One hot encoding
-`` \vec{u} = [0, 0, \dots ,1, \dots,0]  ``
 """
 function calculate_posterior(node::CategoricalStateNode)
 
@@ -132,13 +127,10 @@ function update_node_value_prediction_error!(node::CategoricalStateNode)
     return nothing
 end
 
-@doc raw"""
+"""
     calculate_value_prediction_error(node::CategoricalStateNode)
 
 Calculate the value prediction error for a categorical state node.
-
-Uses the equation
-`` \delta_n= u - \sum_{j=1}^{j\;value\;parents} \hat{\mu}_{j}  ``
 """
 function calculate_value_prediction_error(node::CategoricalStateNode)
 
