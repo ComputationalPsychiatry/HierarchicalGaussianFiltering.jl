@@ -27,7 +27,7 @@ function ActionModels.ActionModel(config::HGFPredictCategory)
             hgf = attributes.submodel
 
             #Extract the inverse temperature
-            β = 1/load_parameters(attributes).action_noise
+            β⁻¹ = 1/load_parameters(attributes).action_noise
 
             #Update the HGF
             update_hgf!(hgf, hgf_observation)
@@ -36,7 +36,7 @@ function ActionModels.ActionModel(config::HGFPredictCategory)
             probabilities = get_states(hgf, target_state)[end] #TODO: figure out why the end here is needed
 
             #Softmax transform with the inverse noise as precision
-            probabilities = softmax(probabilities .* β)
+            probabilities = softmax(probabilities .* β⁻¹)
 
             return Categorical(probabilities)
         end

@@ -28,7 +28,7 @@ function ActionModels.ActionModel(config::HGFSigmoid)
         hgf = attributes.submodel
 
         #Extract inverse temperature
-        β = 1/load_parameters(attributes).action_noise
+        β⁻¹ = 1/load_parameters(attributes).action_noise
 
         #Update the HGF
         update_hgf!(hgf, hgf_observation)
@@ -37,7 +37,7 @@ function ActionModels.ActionModel(config::HGFSigmoid)
         value = get_states(hgf, target_state)
 
         #Calculate the sigmoid action probability
-        action_probability = value^β / (value^β + (1 - value)^β)
+        action_probability = value^β⁻¹ / (value^β⁻¹ + (1 - value)^β⁻¹)
 
         #If the probability mean becomes a NaN
         if isnan(action_probability)
