@@ -32,6 +32,7 @@ abstract type HGFUpdateType end
 #Classic and enhance dupdate types
 struct ClassicUpdate <: HGFUpdateType end
 struct EnhancedUpdate <: HGFUpdateType end
+Base.@kwdef struct UnboundedUpdate <: HGFUpdateType end
 
 
 ###############################################
@@ -209,7 +210,9 @@ Base.@kwdef mutable struct ContinuousStateNodeState
     precision_prediction_error::Union{Real,Missing} = missing
     prediction_mean::Union{Real,Missing} = missing
     prediction_precision::Union{Real,Missing} = missing
-    effective_prediction_precision::Union{Real,Missing} = missing
+    effective_prediction_precision::Union{Real,Missing} = missing    
+    #Saving the previous posterior precision is necessary for the uHGF update
+    prev_posterior_precision::Union{Real} = 1
 end
 
 """
@@ -223,6 +226,7 @@ Base.@kwdef mutable struct ContinuousStateNodeHistory
     prediction_mean::Vector{Union{Real,Missing}} = []
     prediction_precision::Vector{Union{Real,Missing}} = []
     effective_prediction_precision::Vector{Union{Real,Missing}} = []
+    prev_posterior_precision::Vector{Union{Real}} = []
 end
 
 """

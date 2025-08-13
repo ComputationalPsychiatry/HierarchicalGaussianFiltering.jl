@@ -617,3 +617,149 @@ function calculate_precision_prediction_error(node::ContinuousStateNode)
     node.states.prediction_precision * node.states.value_prediction_error^2 - 1
 
 end
+
+
+
+
+
+
+
+
+
+
+######################################
+######## Unbounded HGF update ########
+######################################
+
+"""
+    update_node_posterior!(node::AbstractStateNode)
+
+Update the posterior of a single continuous state node. This is the unbounded HGF update. Only defined for a single volatility child.
+"""
+function update_node_posterior!(node::ContinuousStateNode, update_type::UnboundedUpdate)
+    #Get the single volatility child
+    child = node.edges.volatility_children[1]
+
+    ## Extract variables ##
+    #Get the prev posterior variance
+    child_prev_posterior_variance = 1 / child.states.prev_posterior_precision
+    #Get the coupling strength to the volatility child
+    coupling_strength = child.parameters.coupling_strengths[node.name]
+    #The prediction mean of the child
+    child_prediction_mean = child.states.prediction_mean
+    #The tonic volatility fo the child
+    child_volatility = child.parameters.volatility
+
+
+    @show child_prev_posterior_variance, coupling_strength, child_prediction_mean, child_volatility
+
+
+    ## First approximation L1 ##
+    #Calculate w for the child
+    w_child =
+        exp(coupling_strength * child_prediction_mean + child_volatility) / (
+            child_prev_posterior_variance +
+            exp(coupling_strength * child_prediction_mean + child_volatility)
+        )
+
+
+    #Calculate delta for the child
+    delta_child =
+        (
+            (1 / child.states.posterior_precision) +
+            (child.states.posterior_mean - child_prediction_mean)^2
+        ) / (
+            child_prev_posterior_variance +
+            exp(coupling_strength * node.states.prediction_mean + child_volatility)
+        )
+
+    #Update the L1 posterior precision
+    posterior_precision_L1 =
+        node.states.prediction_precision + 0.5 * coupling_strength^2 * w_child * (1-w_child)
+
+    #Update the L1 posterior mean 
+    posterior_mean_L1 = (
+        node.states.prediction_mean +
+        ((coupling_strength * w_child) / (2 * posterior_precision_L1)) * delta_child
+    )
+
+
+
+    ## Second approximation L2 ##
+    #Calculate the phi for the child
+    phi = log(child_prev_posterior_variance * (2 + sqrt(3)))
+
+    #Calculate w for the child
+    w_phi =
+        exp(coupling_strength * phi + child_volatility) /
+        (child_prev_posterior_variance + exp(coupling_strength * phi + child_volatility))
+
+    #Calculate delta for the child
+    delta_phi =
+        (
+            (1 / child.states.posterior_precision) +
+            (child.states.posterior_mean - child.states.prediction_mean)^2
+        ) /
+        (child_prev_posterior_variance + exp(coupling_strength * phi + child_volatility)) -
+        1.0
+
+    #Update the L2 posterior precision
+    posterior_precision_L2 =
+        node.states.prediction_precision +
+        0.5 * coupling_strength^2 * w_phi * (w_phi + (2 * w_phi - 1) * delta_phi)
+
+    #Calculate the prediction for this expansion
+    prediction_mean_phi =
+        ((2.0 * posterior_precision_L2 - 1.0) * node.states.prediction_mean) /
+        (2.0 * posterior_precision_L2)
+
+    #Update the L2 posterior mean
+    posterior_mean_L2 = (
+        prediction_mean_phi +
+        ((coupling_strength * w_phi) / (2 * posterior_precision_L2)) * delta_phi
+    )
+
+
+
+    ## Weighted combination of the two ##
+    #Get values for weighting function:
+    theta_l = sqrt(
+        1.2 * (
+            (
+                (1 / child.states.posterior_precision) +
+                (child.states.posterior_mean - child_prediction_mean)^2
+            ) / (child_prev_posterior_variance * posterior_precision_L1)
+        ),
+    )
+    phi_l = 8.0
+    theta_r = 0.0
+    phi_r = 1.0
+
+    #Calculate weight using a custom parametrised sigmoid function
+    weight =
+        custom_sigmoid(node.states.prediction_mean, theta_l, phi_l) *
+        (1 - custom_sigmoid(node.states.prediction_mean, theta_r, phi_r))
+
+    #Calculate the final posterior precision and mean
+    posterior_precision =
+        (1 - weight) * posterior_precision_L1 + weight * posterior_precision_L2
+    posterior_mean = (1 - weight) * posterior_mean_L1 + weight * posterior_mean_L2
+
+
+
+    @show posterior_precision, posterior_mean
+
+
+    ## Update values ## 
+    #Update posterior precision
+    node.states.posterior_precision = posterior_precision
+    #Update posterior mean
+    node.states.posterior_mean = posterior_mean
+    return nothing
+end
+
+
+
+function custom_sigmoid(x, theta, phi)
+    return 1 / (1 + exp(-phi * (x - theta)))
+end

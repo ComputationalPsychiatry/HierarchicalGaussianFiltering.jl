@@ -100,9 +100,19 @@ function init_edge!(
             coupling_type.transform
     end
 
-    #If the enhanced HGF update is the defaults, and if it is a precision coupling (volatility or noise)
-    if node_defaults.update_type isa EnhancedUpdate && coupling_type isa PrecisionCoupling
+    
+    #If the default is the Enchanced HGF update, and it is a precision coupling
+    if coupling_type isa PrecisionCoupling && node_defaults.update_type isa EnhancedUpdate
         #Set the node to use the enhanced HGF update
-        parent_node.update_type = node_defaults.update_type
+        child_node.update_type = node_defaults.update_type
+
+    #If the default is the Unbounded HGF update, and it is a volatility coupling
+    elseif coupling_type isa VolatilityCoupling && node_defaults.update_type isa UnboundedUpdate
+
+        #Only if there is only a single volatility child and no other children
+        if length(parent_node.edges.volatility_children) == 1 && length(parent_node.edges.noise_children) == 0 && length(parent_node.edges.drift_children) == 0 && length(parent_node.edges.observation_children) == 0 && length(parent_node.edges.probability_children) == 0
+            #Set the node to use the unbounded HGF update
+            parent_node.update_type = node_defaults.update_type
+        end
     end
 end

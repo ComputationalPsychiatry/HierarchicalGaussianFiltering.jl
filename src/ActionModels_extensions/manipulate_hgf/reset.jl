@@ -32,6 +32,8 @@ function reset_state!(node::ContinuousStateNode)
     node.states.posterior_mean = node.parameters.initial_mean
     node.states.posterior_precision = node.parameters.initial_precision
 
+    node.states.prev_posterior_precision = node.parameters.initial_precision
+
     node.states.value_prediction_error = missing
     node.states.precision_prediction_error = missing
 

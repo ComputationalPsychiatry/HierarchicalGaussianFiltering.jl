@@ -9,6 +9,8 @@ using CSV
 using DataFrames
 using StatsPlots
 
+
+
 # Get the path for the HGF superfolder
 hgf_path = dirname(dirname(pathof(HierarchicalGaussianFiltering)))
 # Add the path to the data files
@@ -65,3 +67,57 @@ posterior_chains = sample_posterior!(model, n_samples = 200, n_chains = 2)
 #-
 #Plot the chains
 plot(posterior_chains)
+
+
+
+
+
+
+# #Define nodes
+# nodes = [
+#     BinaryInput(name = "u"),
+#     BinaryState(name = "xbin"),
+#     ContinuousState(name = "xprob"),
+#     ContinuousState(name = "xvol"),
+# ]
+
+# #Define edges
+# edges = Dict(
+#     ("u", "xbin") => ObservationCoupling(),
+#     ("xbin", "xprob") => ProbabilityCoupling(),
+#     ("xprob", "xvol") => VolatilityCoupling(),
+# )
+
+# #Initialise HGF
+# hgf = init_hgf(nodes = nodes, edges = edges, node_defaults = NodeDefaults(
+#     update_type = HierarchicalGaussianFiltering.UnboundedUpdate(),
+# ))
+
+
+# # Create an HGF
+# hgf_parameters = Dict(
+#     ("xprob", "volatility") => 1,
+#     ("xprob", "initial_mean") => 0,
+#     ("xprob", "initial_precision") => 1,
+#     ("xvol", "volatility") => 1,
+#     ("xvol", "initial_mean") => 1,
+#     ("xvol", "initial_precision") => 1,
+#     ("xbin", "xprob", "coupling_strength") => 1.0,
+#     ("xprob", "xvol", "coupling_strength") => 1.0,
+# );
+
+# set_parameters!(hgf, hgf_parameters)
+# reset!(hgf)
+
+
+# multiple_inputs!(hgf, inputs)
+
+
+
+# plt1 = plot(hgf, ("xbin", "prediction"))
+# plot!(inputs, seriestype = :scatter)
+
+# plt2 = plot(hgf, ("xprob", "posterior"))
+# plt3 = plot(hgf, ("xvol", "posterior"))
+
+# plot(plt1, plt2, plt3, layout = (3, 1), size = (400, 600), legend = false)
