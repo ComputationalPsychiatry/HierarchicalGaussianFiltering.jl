@@ -2,6 +2,11 @@
 ######## Update prediction ########
 ###################################
 
+#Floor on the total predicted variance (carried + volatility): at λ = 0 the
+#carried term vanishes, so without it the precision can diverge as Ω → 0; at
+#the default λ = 1 the sum already exceeds it, so it never binds.
+const MIN_PREDICTED_VARIANCE = 1e-128
+
 ##### Superfunction #####
 """
     update_node_prediction!(node::ContinuousStateNode)
@@ -86,8 +91,17 @@ function calculate_prediction_precision(node::ContinuousStateNode, stepsize::Rea
     #Exponentiate and multiply with stepsize
     predicted_volatility = stepsize * exp(predicted_volatility)
 
-    #Calculate prediction precision 
-    prediction_precision = 1 / (1 / node.states.posterior_precision + predicted_volatility)
+    #Carried variance: the mean prediction multiplies the belief by λ, so its
+    #variance is multiplied by λ² (unchanged at λ = 1, zero at λ = 0). Only the
+    #node's own variance takes the factor; the drift is added after, unscaled.
+    carried_variance =
+        node.parameters.autoconnection_strength^2 / node.states.posterior_precision
+
+    #Calculate prediction precision. The denominator is floored so that λ = 0
+    #with Ω → 0 yields Inf cleanly instead of a NaN/overflow; at λ = 1 the
+    #denominator already exceeds the floor, so it never binds.
+    prediction_precision =
+        1 / max(carried_variance + predicted_volatility, MIN_PREDICTED_VARIANCE)
 
     #Calculate the volatility-weighted effective precision
     effective_prediction_precision = predicted_volatility * prediction_precision
