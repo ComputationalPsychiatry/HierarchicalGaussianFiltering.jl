@@ -77,6 +77,6 @@ include("utils/get_prediction.jl")
 include("utils/get_surprise.jl")
 include("utils/pretty_printing.jl")
 include("utils/set_save_history.jl")
-include("utils/lambert_w.jl")
+include("utils/unbounded_update_helpers.jl")
 
 end
