@@ -36,15 +36,15 @@ function ActionModels.ActionModel(config::HGFSoftmax)
         #Extract specified belief state
         value = get_states(hgf, target_state)
 
-        #Calculate the sigmoid action probability
-        action_probability = logistic(value * β)
+        #Calculate the binary softmax action probability, i.e. a softmax over the two options with values p and 1 - p, where p is the target state. This equals exp(β * p) / (exp(β * p) + exp(β * (1 - p))), but is calculated with the logistic function, which cannot overflow
+        action_probability = logistic(β * (2 * value - 1))
 
         #If the probability mean becomes a NaN
         if isnan(action_probability)
             #Throw an error that will reject samples when fitted
             throw(
                 RejectParameters(
-                    "With these parameters and inputs, the mean of the gaussian action became $action_probability, which is invalid. Try other parameter settings",
+                    "With these parameters and inputs, the action probability became $action_probability, which is invalid. Try other parameter settings",
                 ),
             )
         end

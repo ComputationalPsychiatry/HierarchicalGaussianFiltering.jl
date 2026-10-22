@@ -36,15 +36,15 @@ function ActionModels.ActionModel(config::HGFSigmoid)
         #Extract specified belief state
         value = get_states(hgf, target_state)
 
-        #Calculate the sigmoid action probability
-        action_probability = value^β / (value^β + (1 - value)^β)
+        #Calculate the unit square sigmoid action probability. This equals value^β / (value^β + (1 - value)^β), but is calculated as a logistic function of the logit, which cannot under- or overflow
+        action_probability = logistic(β * logit(value))
 
         #If the probability mean becomes a NaN
         if isnan(action_probability)
             #Throw an error that will reject samples when fitted
             throw(
                 RejectParameters(
-                    "With these parameters and inputs, the mean of the gaussian action became $action_probability, which is invalid. Try other parameter settings",
+                    "With these parameters and inputs, the action probability became $action_probability, which is invalid. Try other parameter settings",
                 ),
             )
         end

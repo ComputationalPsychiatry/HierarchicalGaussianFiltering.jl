@@ -135,7 +135,9 @@ plot(agent_binary_2_level, ("xprob", "posterior"))
 #   - 2nd level: continous (value coupling to 1st level)
 #   - 3rd level: continous (volatility coupling to 2nd level)
 
-hgf_binary_3_level = premade_hgf("binary_3level", verbose = false);
+# Here, the classic HGF update is specified explicitly instead of the default unbounded update:
+hgf_binary_3_level =
+    premade_hgf("binary_3level", Dict("update_type" => ClassicUpdate()), verbose = false);
 
 action_model_binary_3_level = ActionModel(HGFSoftmax(; HGF = hgf_binary_3_level))
 

@@ -62,18 +62,10 @@ function get_surprise(node::ContinuousInputNode)
         return 0
     end
 
-    #Sum the predictions of the vaue parents
-    parents_prediction_mean = 0
-    for parent in node.edges.observation_parents
-        parents_prediction_mean += parent.states.prediction_mean
-    end
-
-    #Get the surprise
-    -log(
-        pdf(
-            Normal(parents_prediction_mean, node.states.prediction_precision),
-            node.states.input_value,
-        ),
+    #Get the surprise under the node's prediction (which includes the bias). The prediction precision is converted to a standard deviation, and the log density is used directly so that it cannot underflow
+    -logpdf(
+        Normal(node.states.prediction_mean, 1 / sqrt(node.states.prediction_precision)),
+        node.states.input_value,
     )
 end
 
