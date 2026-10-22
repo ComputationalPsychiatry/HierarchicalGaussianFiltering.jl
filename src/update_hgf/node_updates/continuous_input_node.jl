@@ -58,8 +58,8 @@ function calculate_prediction_precision(node::ContinuousInputNode)
             parent.states.posterior_mean * node.parameters.coupling_strengths[parent.name]
     end
 
-    #The prediction precision is the inverse of the predicted noise
-    prediction_precision = 1 / exp(predicted_noise)
+    #Calculate prediction precision
+    prediction_precision = exp(-predicted_noise)
 
     return prediction_precision
 end

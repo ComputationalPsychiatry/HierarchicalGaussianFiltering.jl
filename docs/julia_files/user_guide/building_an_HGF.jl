@@ -80,8 +80,8 @@ function hgf_softmax(attributes::ModelAttributes, hgf_observation::Int64)
     #Extract the predicted probability
     value = get_states(hgf, :binary_state_node_prediction_mean)
 
-    #Calculate the action probability with a binary softmax
-    action_probability = logistic(value * β)
+    #Calculate the action probability with a binary softmax (a softmax over the two options with values p and 1 - p)
+    action_probability = logistic(β * (2 * value - 1))
 
     #Create Bernoulli distribution with mean of the target value and a standard deviation from parameters
     return Bernoulli(action_probability)

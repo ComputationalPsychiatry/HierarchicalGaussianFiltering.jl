@@ -4,6 +4,8 @@ module HierarchicalGaussianFiltering
 using Reexport
 @reexport using ActionModels
 using RecipesBase
+#Numerically stable versions of functions involving exp and log
+using LogExpFunctions: logaddexp, log1pexp, logistic, logit
 
 import ActionModels: Agent
 
@@ -11,7 +13,7 @@ import ActionModels: Agent
 export init_node, init_hgf, premade_hgf, check_hgf, update_hgf!, multiple_inputs!
 export get_prediction, get_surprise
 export ParameterGroup
-export EnhancedUpdate, ClassicUpdate
+export EnhancedUpdate, ClassicUpdate, UnboundedUpdate
 export NodeDefaults
 export ContinuousState,
     ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput
@@ -75,5 +77,6 @@ include("utils/get_prediction.jl")
 include("utils/get_surprise.jl")
 include("utils/pretty_printing.jl")
 include("utils/set_save_history.jl")
+include("utils/unbounded_update_helpers.jl")
 
 end

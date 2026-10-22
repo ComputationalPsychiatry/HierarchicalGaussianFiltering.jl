@@ -51,7 +51,7 @@ function premade_JGET(config::Dict; verbose::Bool = true)
         ("u", "xnoise", "coupling_strength") => 1,
         ("x", "xvol", "coupling_strength") => 1,
         ("xnoise", "xnoise_vol", "coupling_strength") => 1,
-        "update_type" => EnhancedUpdate(),
+        "update_type" => UnboundedUpdate(),
         "save_history" => true,
     )
 
