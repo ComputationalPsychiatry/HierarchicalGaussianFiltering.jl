@@ -4,6 +4,7 @@
 
 Makes the first quadratic expansion of the unbounded HGF update, at the prior mean. The precision uses only the concave part of the variational energy, so it is always positive.
 Returns the precision and mean of the expansion.
+This function is only used in the unbounded HGF update.
 """
 function calculate_unbounded_first_expansion(
     node::ContinuousStateNode,
@@ -51,6 +52,7 @@ end
 
 Makes the second quadratic expansion of the unbounded HGF update for a single volatility child, at the approximate secondary mode of the variational energy which that child can create. The full variational energy, with the contributions from all volatility children, is expanded at this point.
 Returns the precision and mean of the expansion, or nothing if the expansion is not finite.
+This function is only used in the unbounded HGF update.
 """
 function calculate_unbounded_second_expansion(
     node::ContinuousStateNode,
@@ -132,6 +134,7 @@ end
 
 Finds the expansion point for the second expansion of the unbounded HGF update: the approximate secondary mode of the variational energy created by a volatility child, in the limit where the variance carried over from the child's previous posterior goes to zero.
 The mode is found in closed form with the Lambert W function, in the canonical variable y = log(t) + κx + ω, which is the log of the child's predicted volatility.
+This function is only used in the unbounded HGF update.
 """
 function calculate_unbounded_expansion_point(
     node::ContinuousStateNode,
@@ -175,6 +178,7 @@ end
 
 For a volatility child, calculates the terms of the unbounded HGF update which depend on the node's value: the child's effective prediction precision (the proportion of its predicted variance that comes from the predicted volatility), its precision prediction error, and its contribution to the node's variational energy.
 These are calculated in log-space, so that they stay finite when the predicted volatility under- or overflows.
+This function is only used in the unbounded HGF update.
 """
 function calculate_volatility_coupling_terms(
     node::ContinuousStateNode,
@@ -222,6 +226,7 @@ end
 
 Calculates the log of a volatility child's predicted volatility (including the stepsize) as a function of the node's value.
 The part which does not depend on the node is recovered from the child's prediction, which was made with the node's previous posterior mean.
+This function is only used in the unbounded HGF update.
 """
 function calculate_log_predicted_volatility(
     node::ContinuousStateNode,
@@ -248,6 +253,7 @@ end
     calculate_variational_energy(node::ContinuousStateNode, node_value::Real, prior_precision::Real, prior_mean::Real)
 
 Calculates the variational energy of a continuous state node with volatility children, at a given value of the node (up to a constant). This is the quadratic prior term plus the contributions from each volatility child.
+This function is only used in the unbounded HGF update.
 """
 function calculate_variational_energy(
     node::ContinuousStateNode,
@@ -275,6 +281,7 @@ end
 The principal branch W₀ of the Lambert W function, which solves w * exp(w) = z for z ≥ 0, given the log of its argument z.
 Taking the log of the argument means that z itself never has to be represented, so it can be far above the largest representable number.
 Uses Halley's method, which converges to machine precision in a few iterations. The iteration is written in terms of the residual w - exp(log(z) - w), so that no intermediate value can overflow.
+This function is only used in the unbounded HGF update.
 """
 function lambert_w0_from_log(log_argument::Real)
 
