@@ -35,7 +35,7 @@ function calculate_prediction_mean(node::BinaryStateNode)
             parent.states.prediction_mean * node.parameters.coupling_strengths[parent.name]
     end
 
-    prediction_mean = 1 / (1 + exp(-prediction_mean))
+    prediction_mean = ismissing(prediction_mean) ? missing : logistic(prediction_mean)
 
     return prediction_mean
 end

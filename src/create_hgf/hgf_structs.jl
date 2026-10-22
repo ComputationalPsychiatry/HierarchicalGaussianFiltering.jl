@@ -29,9 +29,11 @@ abstract type AbstractStateNodeInfo <: AbstractNodeInfo end
 #Supertype for HGF update types
 abstract type HGFUpdateType end
 
-#Classic and enhance dupdate types
+#Classic, enhanced and unbounded update types
+#The unbounded update (Mathys et al., 2026) guarantees positive posterior precisions for volatility parents, and is the default
 struct ClassicUpdate <: HGFUpdateType end
 struct EnhancedUpdate <: HGFUpdateType end
+struct UnboundedUpdate <: HGFUpdateType end
 
 
 ###############################################
@@ -131,7 +133,7 @@ Base.@kwdef struct NodeDefaults
     initial_mean::Real = 0
     initial_precision::Real = 1
     coupling_strength::Real = 1
-    update_type::HGFUpdateType = EnhancedUpdate()
+    update_type::HGFUpdateType = UnboundedUpdate()
 end
 
 Base.@kwdef mutable struct ContinuousState <: AbstractStateNodeInfo
@@ -205,6 +207,7 @@ Configurations of the continuous state node states
 Base.@kwdef mutable struct ContinuousStateNodeState
     posterior_mean::Union{Real} = 0
     posterior_precision::Union{Real} = 1
+    previous_posterior_precision::Union{Real,Missing} = missing
     value_prediction_error::Union{Real,Missing} = missing
     precision_prediction_error::Union{Real,Missing} = missing
     prediction_mean::Union{Real,Missing} = missing
@@ -218,6 +221,7 @@ Configuration of continuous state node history
 Base.@kwdef mutable struct ContinuousStateNodeHistory
     posterior_mean::Vector{Real} = []
     posterior_precision::Vector{Real} = []
+    previous_posterior_precision::Vector{Union{Real,Missing}} = []
     value_prediction_error::Vector{Union{Real,Missing}} = []
     precision_prediction_error::Vector{Union{Real,Missing}} = []
     prediction_mean::Vector{Union{Real,Missing}} = []

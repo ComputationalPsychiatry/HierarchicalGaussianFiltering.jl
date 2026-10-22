@@ -2,6 +2,9 @@
 ######## Update prediction ########
 ###################################
 
+#Minimum for the predicted variance, to avoid underflow
+const MIN_PREDICTED_VARIANCE = 1e-128
+
 ##### Superfunction #####
 """
     update_node_prediction!(node::ContinuousStateNode)
@@ -9,6 +12,9 @@
 Update the prediction of a single state node.
 """
 function update_node_prediction!(node::ContinuousStateNode, stepsize::Real)
+
+    #Store the posterior precision from the last timestep, before the posterior is updated.
+    node.states.previous_posterior_precision = node.states.posterior_precision
 
     #Update prediction mean
     node.states.prediction_mean = calculate_prediction_mean(node, stepsize)
@@ -83,14 +89,26 @@ function calculate_prediction_precision(node::ContinuousStateNode, stepsize::Rea
             parent.states.posterior_mean * node.parameters.coupling_strengths[parent.name]
     end
 
-    #Exponentiate and multiply with stepsize
-    predicted_volatility = stepsize * exp(predicted_volatility)
+    #Add the log of the stepsize, to get the log of the predicted volatility. Use this to avoid over/underflow
+    log_predicted_volatility = log(stepsize) + predicted_volatility
 
-    #Calculate prediction precision 
-    prediction_precision = 1 / (1 / node.states.posterior_precision + predicted_volatility)
+    #Exponentiate to get the predicted volatility
+    predicted_volatility = exp(log_predicted_volatility)
 
-    #Calculate the volatility-weighted effective precision
-    effective_prediction_precision = predicted_volatility * prediction_precision
+    #Carried variance: the mean prediction multiplies the belief by λ, so its
+    #variance is multiplied by λ².
+    carried_variance =
+        node.parameters.autoconnection_strength^2 / node.states.posterior_precision
+
+    #Calculate prediction precision. The denominator is floored so that λ = 0
+    #with Ω → 0 yields Inf cleanly instead of a NaN/overflow.
+    prediction_precision =
+        1 / max(carried_variance + predicted_volatility, MIN_PREDICTED_VARIANCE)
+
+    #Calculate the volatility-weighted effective precision, which is the proportion of the
+    #predicted variance that comes from the predicted volatility. 
+    effective_prediction_precision =
+        logistic(log_predicted_volatility - log(carried_variance))
 
     #If the posterior precision is negative
     if prediction_precision < 0
@@ -142,6 +160,34 @@ function update_node_posterior!(node::ContinuousStateNode, update_type::Enhanced
     return nothing
 end
 
+"""
+    update_node_posterior!(node::AbstractStateNode, update_type::UnboundedUpdate)
+
+Update the posterior of a single continuous state node. This is the unbounded HGF update (Mathys et al., 2026), which guarantees a positive posterior precision for volatility parents.
+"""
+function update_node_posterior!(node::ContinuousStateNode, update_type::UnboundedUpdate)
+
+    #If the node has no volatility children, the unbounded update is identical to the classic update
+    if length(node.edges.volatility_children) == 0
+        update_node_posterior!(node, ClassicUpdate())
+        return nothing
+    end
+
+    #Update posterior precision with the update terms from all children except the volatility children.
+    #This gives the effective prior precision for the unbounded update.
+    node.states.posterior_precision = calculate_posterior_precision(node, update_type)
+
+    #Calculate the posterior mean with the update terms from all children except the volatility children.
+    #This gives the effective prior mean for the unbounded update. It is not stored yet, since the previous posterior mean is still needed.
+    prior_mean = calculate_posterior_mean(node, update_type)
+
+    #Update posterior precision and mean jointly with the update terms from the volatility children
+    node.states.posterior_precision, node.states.posterior_mean =
+        calculate_unbounded_posterior(node, prior_mean)
+
+    return nothing
+end
+
 ##### Precision update #####
 """
     calculate_posterior_precision(node::AbstractNode)
@@ -180,8 +226,12 @@ function calculate_posterior_precision(
 
     #Add update terms from volatility children
     for child in node.edges.volatility_children
-        posterior_precision +=
-            calculate_posterior_precision_increment(node, child, VolatilityCoupling())
+        posterior_precision += calculate_posterior_precision_increment(
+            node,
+            child,
+            VolatilityCoupling(),
+            update_type,
+        )
     end
 
     #Add update terms from noise children
@@ -280,6 +330,7 @@ function calculate_posterior_precision_increment(
     node::ContinuousStateNode,
     child::ContinuousStateNode,
     coupling_type::VolatilityCoupling,
+    update_type::Union{ClassicUpdate,EnhancedUpdate},
 )
 
     1 / 2 *
@@ -296,6 +347,16 @@ function calculate_posterior_precision_increment(
     child.parameters.coupling_strengths[node.name]^2 *
     child.states.effective_prediction_precision *
     child.states.precision_prediction_error
+end
+
+function calculate_posterior_precision_increment(
+    node::ContinuousStateNode,
+    child::ContinuousStateNode,
+    coupling_type::VolatilityCoupling,
+    update_type::UnboundedUpdate,
+)
+    #The volatility children are handled jointly by the unbounded update, so there is no separate increment
+    return 0
 end
 
 function calculate_posterior_precision_increment(
@@ -377,12 +438,12 @@ function calculate_posterior_mean(node::ContinuousStateNode, update_type::HGFUpd
     return posterior_mean
 end
 
-## Classic drift coupling ##
+## Classic and unbounded drift coupling ##
 function calculate_posterior_mean_increment(
     node::ContinuousStateNode,
     child::ContinuousStateNode,
     coupling_type::DriftCoupling,
-    update_type::ClassicUpdate,
+    update_type::Union{ClassicUpdate,UnboundedUpdate},
 )
     (
         (
@@ -422,12 +483,12 @@ function calculate_posterior_mean_increment(
 
 end
 
-## Classic observation coupling ##
+## Classic and unbounded observation coupling ##
 function calculate_posterior_mean_increment(
     node::ContinuousStateNode,
     child::ContinuousInputNode,
     coupling_type::ObservationCoupling,
-    update_type::ClassicUpdate,
+    update_type::Union{ClassicUpdate,UnboundedUpdate},
 )
     #For input node children with missing input
     if ismissing(child.states.input_value)
@@ -456,12 +517,12 @@ function calculate_posterior_mean_increment(
     end
 end
 
-## Classic probability coupling ##
+## Classic and unbounded probability coupling ##
 function calculate_posterior_mean_increment(
     node::ContinuousStateNode,
     child::BinaryStateNode,
     coupling_type::ProbabilityCoupling,
-    update_type::ClassicUpdate,
+    update_type::Union{ClassicUpdate,UnboundedUpdate},
 )
     #If the posterior is missing (due to missing inputs)
     if ismissing(child.states.posterior_mean)
@@ -516,12 +577,23 @@ function calculate_posterior_mean_increment(
     ) / node.states.prediction_precision * child.states.precision_prediction_error
 end
 
-## Classic Noise coupling ##
+## Unbounded Volatility coupling ##
+function calculate_posterior_mean_increment(
+    node::ContinuousStateNode,
+    child::ContinuousStateNode,
+    coupling_type::VolatilityCoupling,
+    update_type::UnboundedUpdate,
+)
+    #The volatility children are handled jointly by the unbounded update, so there is no separate increment
+    return 0
+end
+
+## Classic and unbounded Noise coupling ##
 function calculate_posterior_mean_increment(
     node::ContinuousStateNode,
     child::ContinuousInputNode,
     coupling_type::NoiseCoupling,
-    update_type::ClassicUpdate,
+    update_type::Union{ClassicUpdate,UnboundedUpdate},
 )
     #For input node children with missing input
     if ismissing(child.states.input_value)
@@ -554,6 +626,69 @@ function calculate_posterior_mean_increment(
 
         return update_term
     end
+end
+
+##### Unbounded update #####
+"""
+    calculate_unbounded_posterior(node::ContinuousStateNode, prior_mean::Real)
+
+Calculates the posterior precision and mean of a continuous state node with volatility children, using the unbounded HGF update (Mathys et al., 2026).
+The node's variational energy is approximated with quadratic expansions: a first expansion at the prior mean, which uses only the concave part of the variational energy and therefore always has a positive precision, and a second expansion for each volatility child, at the approximate secondary mode of the variational energy which that child can create, found with the Lambert W function.
+The expansions are weighted with a softmax over the variational energy at their means, and the posterior is the moment-matched Gaussian of the resulting mixture, so that the posterior precision is positive by construction.
+The effective prior, which includes the update terms from all children that are not volatility children, is given by the node's stored posterior precision and the passed prior mean.
+"""
+function calculate_unbounded_posterior(node::ContinuousStateNode, prior_mean::Real)
+
+    #Extract the effective prior precision, which has been stored as the posterior precision
+    prior_precision = node.states.posterior_precision
+
+    #Make the first expansion, at the prior mean
+    first_expansion_precision, first_expansion_mean =
+        calculate_unbounded_first_expansion(node, prior_precision, prior_mean)
+
+    #Collect the precisions and means of the expansions, starting with the first expansion
+    expansion_precisions = Real[first_expansion_precision]
+    expansion_means = Real[first_expansion_mean]
+
+    #For each volatility child
+    for child in node.edges.volatility_children
+
+        #Make a second expansion, at the approximate secondary mode which that child can create
+        second_expansion =
+            calculate_unbounded_second_expansion(node, child, prior_precision, prior_mean)
+
+        #If the expansion could be made
+        if !isnothing(second_expansion)
+            #Add it to the list of expansions
+            push!(expansion_precisions, second_expansion[1])
+            push!(expansion_means, second_expansion[2])
+        end
+    end
+
+    #Calculate the variational energy at the mean of each expansion
+    variational_energies = [
+        calculate_variational_energy(node, expansion_mean, prior_precision, prior_mean)
+        for expansion_mean in expansion_means
+    ]
+
+    #Weight the expansions with a softmax over their variational energies, so that expansions at points of higher variational energy get higher weights.
+    #The maximum is subtracted first, so that the exponentials cannot overflow.
+    expansion_weights = exp.(variational_energies .- maximum(variational_energies))
+    expansion_weights = expansion_weights ./ sum(expansion_weights)
+
+    #Gaussian mixture moment matching: the posterior mean is the weighted mean of the expansion means
+    posterior_mean = sum(expansion_weights .* expansion_means)
+
+    #The posterior variance is the weighted mean of the expansion variances, plus the variance between the expansion means
+    posterior_variance = sum(
+        expansion_weights .*
+        (1 ./ expansion_precisions .+ (expansion_means .- posterior_mean) .^ 2),
+    )
+
+    #The posterior precision is the inverse of the posterior variance
+    posterior_precision = 1 / posterior_variance
+
+    return posterior_precision, posterior_mean
 end
 
 ###############################################

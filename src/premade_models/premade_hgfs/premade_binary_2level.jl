@@ -17,7 +17,7 @@ function premade_binary_2level(config::Dict; verbose::Bool = true)
         ("xprob", "initial_mean") => 0,
         ("xprob", "initial_precision") => 1,
         ("xbin", "xprob", "coupling_strength") => 1,
-        "update_type" => EnhancedUpdate(),
+        "update_type" => UnboundedUpdate(),
         "save_history" => true,
     )
 
