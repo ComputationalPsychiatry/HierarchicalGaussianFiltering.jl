@@ -3,7 +3,7 @@ export HGFSoftmax
 Base.@kwdef struct HGFSoftmax <: ActionModels.AbstractPremadeModel
     action_noise::Float64 = 1.0
     target_state::Symbol = :xbin_prediction_mean
-    HGF::Union{HGF,String} = "continuous_2level"
+    HGF::Union{HGF,String} = "binary_3level"
 end
 
 function ActionModels.ActionModel(config::HGFSoftmax)
@@ -49,7 +49,7 @@ function ActionModels.ActionModel(config::HGFSoftmax)
             )
         end
 
-        #Create normal distribution with mean of the target value and a standard deviation from parameters
+        #Create Bernoulli distribution with the calculated action probability
         return Bernoulli(action_probability)
     end
 

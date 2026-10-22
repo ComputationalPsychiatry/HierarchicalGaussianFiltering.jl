@@ -2,9 +2,7 @@
 ######## Update prediction ########
 ###################################
 
-#Floor on the total predicted variance (carried + volatility): at λ = 0 the
-#carried term vanishes, so without it the precision can diverge as Ω → 0; at
-#the default λ = 1 the sum already exceeds it, so it never binds.
+#Minimum for the predicted variance, to avoid underflow
 const MIN_PREDICTED_VARIANCE = 1e-128
 
 ##### Superfunction #####
@@ -16,8 +14,6 @@ Update the prediction of a single state node.
 function update_node_prediction!(node::ContinuousStateNode, stepsize::Real)
 
     #Store the posterior precision from the last timestep, before the posterior is updated.
-    #The unbounded HGF update of volatility parents needs it, since it gives the variance
-    #that is carried over from the last posterior into this node's prediction.
     node.states.previous_posterior_precision = node.states.posterior_precision
 
     #Update prediction mean
@@ -93,29 +89,24 @@ function calculate_prediction_precision(node::ContinuousStateNode, stepsize::Rea
             parent.states.posterior_mean * node.parameters.coupling_strengths[parent.name]
     end
 
-    #Add the log of the stepsize, to get the log of the predicted volatility. This is kept,
-    #since the exponentiated version can over- or underflow.
+    #Add the log of the stepsize, to get the log of the predicted volatility. Use this to avoid over/underflow
     log_predicted_volatility = log(stepsize) + predicted_volatility
 
     #Exponentiate to get the predicted volatility
     predicted_volatility = exp(log_predicted_volatility)
 
     #Carried variance: the mean prediction multiplies the belief by λ, so its
-    #variance is multiplied by λ² (unchanged at λ = 1, zero at λ = 0). Only the
-    #node's own variance takes the factor; the drift is added after, unscaled.
+    #variance is multiplied by λ².
     carried_variance =
         node.parameters.autoconnection_strength^2 / node.states.posterior_precision
 
     #Calculate prediction precision. The denominator is floored so that λ = 0
-    #with Ω → 0 yields Inf cleanly instead of a NaN/overflow; at λ = 1 the
-    #denominator already exceeds the floor, so it never binds.
+    #with Ω → 0 yields Inf cleanly instead of a NaN/overflow.
     prediction_precision =
         1 / max(carried_variance + predicted_volatility, MIN_PREDICTED_VARIANCE)
 
     #Calculate the volatility-weighted effective precision, which is the proportion of the
-    #predicted variance that comes from the predicted volatility. It is calculated as a
-    #logistic function in log-space, so that it stays finite (saturating at 0 or 1) when the
-    #predicted volatility under- or overflows, instead of becoming NaN.
+    #predicted variance that comes from the predicted volatility. 
     effective_prediction_precision =
         logistic(log_predicted_volatility - log(carried_variance))
 

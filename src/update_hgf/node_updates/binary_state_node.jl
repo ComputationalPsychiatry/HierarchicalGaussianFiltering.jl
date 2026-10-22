@@ -35,8 +35,6 @@ function calculate_prediction_mean(node::BinaryStateNode)
             parent.states.prediction_mean * node.parameters.coupling_strengths[parent.name]
     end
 
-    #Transform to a probability with the logistic function (the numerically stable version, where the exponential cannot overflow).
-    #If the parent's prediction is missing (before the first input), the prediction is also missing.
     prediction_mean = ismissing(prediction_mean) ? missing : logistic(prediction_mean)
 
     return prediction_mean
