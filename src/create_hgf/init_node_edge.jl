@@ -100,9 +100,11 @@ function init_edge!(
             coupling_type.transform
     end
 
-    #If the enhanced or the unbounded HGF update is the default, and if it is a precision coupling (volatility or noise)
+    #If the enhanced or the unbounded HGF update is the default, and if it is a volatility coupling.
+    #Noise parents of input nodes keep the classic update (Weber et al., 2026, Eqs. 74 and 78), which divides the mean update by the posterior precision.
+    #A noise parent that is also a volatility parent gets the enhanced or unbounded update from its volatility coupling.
     if node_defaults.update_type isa Union{EnhancedUpdate,UnboundedUpdate} &&
-       coupling_type isa PrecisionCoupling
+       coupling_type isa VolatilityCoupling
         #Set the parent node to use that HGF update
         parent_node.update_type = node_defaults.update_type
     end
