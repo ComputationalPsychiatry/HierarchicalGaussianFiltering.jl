@@ -126,7 +126,7 @@ end
 """
     calculate_precision_prediction_error(node::ContinuousInputNode)
 
-Calculates an input node's volatility prediction error.
+Calculates an input node's noise prediction error (Weber et al., 2026, Eq. 72). It compares the input with the posterior of the node's observation parents, which have been updated with the input before this step: their posterior variances plus the squared distance between the input and the value they imply, scaled by the predicted noise precision.
 """
 function calculate_precision_prediction_error(node::ContinuousInputNode)
 
@@ -141,23 +141,23 @@ function calculate_precision_prediction_error(node::ContinuousInputNode)
         #Set the prediction error to missing
         precision_prediction_error = missing
     else
-        #Extract parents
-        observation_parents = node.edges.observation_parents
+        #Initialize the input implied by the observation parents' posteriors at the bias, and its variance at zero
+        posterior_input_mean = node.parameters.bias
+        posterior_input_variance = 0
 
-        #Average the posterior precision of the observation parents 
-        parents_average_posterior_precision = 0
-
-        for parent in observation_parents
-            parents_average_posterior_precision += parent.states.posterior_precision
+        #For each observation parent
+        for parent in node.edges.observation_parents
+            #Add its posterior mean and its posterior variance
+            posterior_input_mean += parent.states.posterior_mean
+            posterior_input_variance += 1 / parent.states.posterior_precision
         end
 
-        parents_average_posterior_precision =
-            parents_average_posterior_precision / length(observation_parents)
-
-        #Get the noise prediction error using the average parent parents_posterior_precision 
+        #Get the noise prediction error from the posterior variance and the squared distance between the input and the posterior mean
         precision_prediction_error =
-            node.states.prediction_precision / parents_average_posterior_precision +
-            node.states.prediction_precision * node.states.value_prediction_error^2 - 1
+            node.states.prediction_precision * (
+                posterior_input_variance +
+                (node.states.input_value - posterior_input_mean)^2
+            ) - 1
     end
 
     return precision_prediction_error
