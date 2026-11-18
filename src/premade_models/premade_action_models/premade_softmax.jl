@@ -50,7 +50,8 @@ function ActionModels.ActionModel(config::HGFSoftmax)
         end
 
         #Create Bernoulli distribution with the calculated action probability
-        return Bernoulli(action_probability)
+        #Skip the check of the probability, which fails under ForwardDiff 1 when it is exactly 0 or 1 with a NaN derivative
+        return Bernoulli(action_probability; check_args = false)
     end
 
     parameters = (action_noise = Parameter(config.action_noise),)

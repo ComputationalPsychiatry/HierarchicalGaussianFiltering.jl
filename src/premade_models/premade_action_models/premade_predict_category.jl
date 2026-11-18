@@ -38,7 +38,9 @@ function ActionModels.ActionModel(config::HGFPredictCategory)
             #Softmax transform with the inverse noise as precision
             probabilities = softmax(probabilities .* β)
 
-            return Categorical(probabilities)
+            #Create a categorical distribution with the probabilities
+            #Skip the check of the probabilities, which fails under ForwardDiff 1 when they are exactly 0 or 1 with NaN derivatives
+            return Categorical(probabilities; check_args = false)
         end
 
     parameters = (; action_noise = Parameter(config.action_noise))
